@@ -19,10 +19,10 @@ class UserService {
 
         const user = await UserModel.create({email, password: hashedPassword})
 
-        //await mailService.sendActivationMail(email, `${process.env.API_URL}/api/activate${activationLink}`)
+        await mailService.sendActivationMail(email, `${process.env.API_URL}/api/activate${activationLink}`)
 
         const userDto = new UserDto(user)
-        const tokens = tokenService.generateTokens({...user})
+        const tokens = tokenService.generateTokens({...userDto})
 
         await tokenService.saveToken(userDto.id, tokens.refreshToken)
 
@@ -33,9 +33,7 @@ class UserService {
     }
 
     async activate(activationLink) {
-        const user = await UserModel.findOne({
-            activationLink
-        })
+        const user = await UserModel.findOne({activationLink})
 
         if (!user) {
             throw ApiError.BadRequest('Incorrect activation link')
@@ -57,7 +55,7 @@ class UserService {
             throw ApiError.BadRequest('Password incorrect')
         }
         const userDto = new UserDto(user)
-        const tokens = tokenService.generateTokens({...user})
+        const tokens = tokenService.generateTokens({...userDto})
 
         await tokenService.saveToken(userDto.id, tokens.refreshToken)
 
